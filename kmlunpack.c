@@ -65,7 +65,7 @@ int main ( int argc, char ** argv )
 
     if( db->open( db, NULL, db_file, NULL, DB_UNKNOWN, DB_RDONLY, 0 ) == 0 ) {
         if ( db->cursor( db, NULL, &cursor, 0) == 0 ) {
-            while( cursor->get( cursor, &key, &value, DB_NEXT ) == 0 ) {
+            while( cursor->c_get( cursor, &key, &value, DB_NEXT ) == 0 ) {
                 path[base_len] = '\0';
                 if( base_len + key.size + 1 > PATH_MAX ) {
                     fprintf( stderr, "Skipping file, name is too long\n" );
@@ -91,7 +91,7 @@ int main ( int argc, char ** argv )
                 }
                 fclose( file );
             }
-            cursor->close( cursor );
+            cursor->c_close( cursor );
         } else {
             fprintf( stderr, "Can't create database cursor\n" );
             retval = 1;
