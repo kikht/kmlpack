@@ -21,7 +21,13 @@ if ($data === FALSE) {
     header("HTTP/1.0 404 Not Found");
     echo "<p>Not found file " . $file . "<p>";
 } else {
-    header_remove("Content-Type")
+    if (substr_compare($file, "kml", -3, -3)) {
+        header("Content-Type: application/vnd.google-earth.kml+xml");
+    } else if (substr_compare($file, "png", -3, -3)) {
+        header("Content-Type: image/png");
+    } else {
+        header("Content-Type: application/octet-stream");
+    }
     print($data);
 }
 
