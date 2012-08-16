@@ -30,7 +30,7 @@ static int put_file ( char * name, char * key, size_t size, DB * db )
     file = fopen( name, "rb" );
     if( file ) {
         if( fread( dbdata.data, size, 1, file ) == 1 ) {
-            if( db->put( db, NULL, &dbkey, &dbdata, DB_NOOVERWRITE ) != 0 ) {
+            if( db->put( db, NULL, &dbkey, &dbdata, 0 ) != 0 ) {
                 fprintf( stderr, "Can't put data into database for file %s\n", 
                     name );
                 retval = 1;
