@@ -20,12 +20,8 @@ $data = dba_fetch($file, $db);
 if ($data === FALSE) {
     header("HTTP/1.0 404 Not Found");
     echo "<p>Not found file " . $file . "<p>";
-    // $key = dba_firstkey($db);
-    // while ($key !== FALSE) {
-    //     print($key . "<br>");
-    //     $key = dba_nextkey($db);
-    // }
 } else {
+    header_remove("Content-Type")
     print($data);
 }
 
