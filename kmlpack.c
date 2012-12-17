@@ -29,7 +29,7 @@ static int put_file ( char * name, char * key, size_t size, DB * db )
 
     file = fopen( name, "rb" );
     if( file ) {
-        if( fread( dbdata.data, size, 1, file ) == 1 ) {
+        if( ( size == 0 ) || ( fread( dbdata.data, size, 1, file ) == 1 ) ) {
             if( db->put( db, NULL, &dbkey, &dbdata, 0 ) != 0 ) {
                 fprintf( stderr, "Can't put data into database for file %s\n", 
                     name );
@@ -55,13 +55,21 @@ static int list_files ( char * name, size_t base_len, DB * db )
     struct dirent * entry;
     struct stat info;
     size_t len = strlen( name );
-    int retval = 0;    
+    int retval = 0;
+    long lastidx, nextidx;
 
     handle = opendir( name );
     if( handle ) {
         name[len] = '/';
         name[len+1] = '\0';
+        lastidx = telldir( handle );
         while( ( entry = readdir( handle ) ) != NULL ) {
+            nextidx = telldir( handle );
+            if ( nextidx == lastidx ) {
+                fprintf(stderr, "Directory corruption at %s\n", name);
+                break;
+            }
+            lastidx = nextidx;
             if( strcmp( entry->d_name, "." ) != 0 && 
                     strcmp( entry->d_name, ".." ) != 0) {
                 if( len + strlen( entry->d_name ) + 2 > PATH_MAX ) {
@@ -71,15 +79,20 @@ static int list_files ( char * name, size_t base_len, DB * db )
                     continue;
                 }
                 strcpy( name + len + 1, entry->d_name );
-                stat( name, &info );
-                if( S_ISREG( info.st_mode ) ) {
-                    retval |= put_file( 
-                        name, name + base_len, info.st_size, db );
-                } else if( S_ISDIR( info.st_mode ) ) {
-                    retval |= list_files( name, base_len, db );
-                } else {
-                    fprintf( stderr, "Strange file %s\n", name );
-                }
+                retval = stat( name, &info );
+                if (retval == 0) {
+                    if( S_ISREG( info.st_mode ) ) {
+                        retval |= put_file( 
+                             name, name + base_len, info.st_size, db );
+                    } else if( S_ISDIR( info.st_mode ) ) {
+                         retval |= list_files( name, base_len, db );
+                    } else {
+                         fprintf( stderr, "Strange file %s\n", name );
+                    }
+               } else {
+                     fprintf( stderr,"Failed to stat file %s\n", name );
+                     perror( "stat" );
+               }
             }
         }
         closedir( handle );

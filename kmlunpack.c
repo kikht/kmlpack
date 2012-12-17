@@ -85,7 +85,8 @@ int main ( int argc, char ** argv )
                     retval = 1;
                     continue;
                 }
-                if( fwrite( value.data, value.size, 1, file ) != 1 ) {
+                if( ( value.size != 0 ) && 
+						( fwrite( value.data, value.size, 1, file ) != 1 ) ) {
                     fprintf( stderr, "Can't write to %s\n", path );
                     retval = 1;
                 }
