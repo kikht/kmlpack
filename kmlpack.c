@@ -79,8 +79,7 @@ static int list_files ( char * name, size_t base_len, DB * db )
                     continue;
                 }
                 strcpy( name + len + 1, entry->d_name );
-                retval = stat( name, &info );
-                if (retval == 0) {
+                if( stat( name, &info ) == 0 ) {
                     if( S_ISREG( info.st_mode ) ) {
                         retval |= put_file( 
                              name, name + base_len, info.st_size, db );
@@ -89,10 +88,11 @@ static int list_files ( char * name, size_t base_len, DB * db )
                     } else {
                          fprintf( stderr, "Strange file %s\n", name );
                     }
-               } else {
-                     fprintf( stderr,"Failed to stat file %s\n", name );
-                     perror( "stat" );
-               }
+                } else {
+                    retval = 1;
+                    fprintf( stderr,"Failed to stat file %s\n", name );
+                    perror( "stat" );
+                }
             }
         }
         closedir( handle );
